@@ -1,3 +1,16 @@
+#calendar-navigation {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin: 1rem;
+}
+
+#month-title {
+    min-width: 120px;
+    text-align: center;
+}
+
 #calendar {
     width: 100%;
     max-width: 700px;

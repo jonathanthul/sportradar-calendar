@@ -1,8 +1,82 @@
 // script.js
 // fetches event data from data/events.json, normalizes it and stores it in normalEvents
 
-// will hold normalized event data after loading
-let normalEvents = [];
+let normalEvents = []; // will hold normalized event data after loading
+let currentYear = 2025;
+let currentMonth = 10;
+const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+const prevBtn = document.getElementById('prevButton');
+const nextBtn = document.getElementById('nextButton');
+const monthTitle = document.getElementById('month-title');
+const grid = document.querySelector('.calendar-grid');
+const header = document.querySelector('.calendar-header');
+
+prevBtn.addEventListener('click', () => {
+    currentMonth--;
+    if (currentMonth < 0) {
+        currentMonth = 11;
+        currentYear--;
+    }
+    renderCalendar(currentYear, currentMonth);
+});
+
+nextBtn.addEventListener('click', () => {
+    currentMonth++;
+    if (currentMonth > 11) {
+        currentMonth = 0;
+        currentYear++;
+    }
+    renderCalendar(currentYear, currentMonth);
+});
+
+
+// Render weekday labels according to dayNames
+function renderDayNames() {
+    dayNames.forEach(day => {
+        const div = document.createElement('div');
+        div.textContent = day;
+        header.appendChild(div);
+    });
+}
+
+function renderCalendar(year, month) {
+    grid.innerHTML = ''; // clears previous month
+    monthTitle.textContent = `${monthNames[currentMonth]} ${currentYear}`;
+
+    const firstDateOfMonth = new Date(year, month, 1);
+    const lastDateOfMonth = new Date(year, month + 1, 0);
+    
+    // Determine Monday of first week
+    const startDate = new Date(firstDateOfMonth); // create a copy of the startDate to loop over
+    while (startDate.getDay() !== 1) { // .getDay returns day of the week starting at Sunday = 0. .getDate would return the actual day part of the date, i. e. 1-31
+        startDate.setDate(startDate.getDate() - 1) // Take the current startDate, take its day component and subtract 1. Since this is a JS Date object, subtracting one automatically rolls over into previous month or year if needed. Then the startDate is set to that.
+    }
+
+    // Determine Sunday of last week
+    const endDate = new Date(lastDateOfMonth);
+    while (endDate.getDay() !== 0) {
+        endDate.setDate(endDate.getDate() + 1)
+    }
+
+    // Generate one cell per day between startDate and endDate
+    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+        // console.log(d) // Test console print
+        const dayDiv = document.createElement('div');
+        dayDiv.classList.add('day-cell');
+
+        dayDiv.textContent = d.getDate();
+        dayDiv.dataset.date = d.toISOString().split('T')[0]; // what is going on here?
+        
+        // Highlight today's date
+        if (d.toDateString() === new Date().toDateString()) {
+            dayDiv.classList.add('day-today');
+        }
+
+        grid.appendChild(dayDiv);
+    }
+}
 
 // normalize event objects. Combines date and time into a single JS Date object, provides fallback values for missing data
 function normalizeEvent(rawEvent) {
@@ -50,60 +124,10 @@ async function loadEvents() {
 }
 
 // load events and store them for later, print them for testing
+// render calendar
 loadEvents().then(events => {
     normalEvents = events;
     console.log(normalEvents)
+    renderDayNames();
+    renderCalendar(currentYear, currentMonth)
 })
-
-const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-
-// Render weekday labels according to dayNames
-function renderDayNames() {
-    const header = document.querySelector('.calendar-header');
-    dayNames.forEach(day => {
-        const div = document.createElement('div');
-        div.textContent = day;
-        header.appendChild(div);
-    });
-}
-
-renderDayNames();
-
-function renderCalendar(year, month) {
-    const grid = document.querySelector('.calendar-grid');
-    grid.innerHTML = ''; // clears previous month
-
-    const firstDateOfMonth = new Date(year, month, 1);
-    const lastDateOfMonth = new Date(year, month + 1, 0);
-    
-    // Determine Monday of first week
-    const startDate = new Date(firstDateOfMonth); // create a copy of the startDate to loop over
-    while (startDate.getDay() !== 1) { // .getDay returns day of the week starting at Sunday = 0. .getDate would return the actual day part of the date, i. e. 1-31
-        startDate.setDate(startDate.getDate() - 1) // Take the current startDate, take its day component and subtract 1. Since this is a JS Date object, subtracting one automatically rolls over into previous month or year if needed. Then the startDate is set to that.
-    }
-
-    // Determine Sunday of last week
-    const endDate = new Date(lastDateOfMonth);
-    while (endDate.getDay() !== 0) {
-        endDate.setDate(endDate.getDate() + 1)
-    }
-
-    // Generate one cell per day between startDate and endDate
-    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-        // console.log(d) // Test console print
-        const dayDiv = document.createElement('div');
-        dayDiv.classList.add('day-cell');
-
-        dayDiv.textContent = d.getDate();
-        dayDiv.dataset.date = d.toISOString().split('T')[0]; // what is going on here?
-        
-        // Highlight today's date
-        if (d.toDateString() === new Date().toDateString()) {
-            dayDiv.classList.add('day-today');
-        }
-
-        grid.appendChild(dayDiv);
-    }
-}
-
-renderCalendar(2025, 10);
