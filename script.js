@@ -20,6 +20,7 @@ prevBtn.addEventListener('click', () => {
         currentYear--;
     }
     renderCalendar(currentYear, currentMonth);
+    renderEvents(normalEvents);
 });
 
 nextBtn.addEventListener('click', () => {
@@ -29,6 +30,7 @@ nextBtn.addEventListener('click', () => {
         currentYear++;
     }
     renderCalendar(currentYear, currentMonth);
+    renderEvents(normalEvents);
 });
 
 
@@ -127,18 +129,10 @@ async function loadEvents() {
         return [];
     }
 }
-// Initialize the app
-// 1. load and normalize events from events.json
-// 2. render calendar header
-// 3. render calendar grid for the correct month
-// 4. loop through events and add event containers in the correct day cells
-async function init() {
-    normalEvents = await loadEvents();
 
-    renderDayNames();
-    renderCalendar(currentYear, currentMonth);
-
-    normalEvents.forEach(event => {
+// loop through all events and add event containers in the correct day cells
+function renderEvents(events) {
+    events.forEach(event => {
         const eventDateString = event.datetime.toISOString().split('T')[0];
         const dayCell = document.querySelector(`.day-cell[data-date='${eventDateString}']`);
         if (dayCell) {
@@ -148,6 +142,17 @@ async function init() {
             dayCell.querySelector('.events').appendChild(eventDiv);
         }
     });
+}
+
+// Initialize the app
+// 1. load and normalize events from events.json
+// 2. render calendar header, grid and events
+async function init() {
+    normalEvents = await loadEvents();
+
+    renderDayNames();
+    renderCalendar(currentYear, currentMonth);
+    renderEvents(normalEvents);
 }
 
 init();
