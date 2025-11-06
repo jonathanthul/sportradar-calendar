@@ -13,6 +13,7 @@
                 <button id="prevButton">&larr;</button>
                 <div id="month-title"></div>
                 <button id="nextButton">&rarr;</button>
+                <button id="createButton">+</button>
             </nav>
             <main>
                 <div id="calendar">
@@ -23,12 +24,24 @@
         </div>
         <div id="event-detail-view" class="modal hidden">
             <div id="event-modal" class="modal-content">
-                <button id="close-event-modal" class="close-btn">X</button>
+                <button class="modal-close">X</button>
                 <p id="event-date"></p>
                 <h2 id="event-title"></h2>
                 <p id="event-result"></p>
                 <p id="event-competition"></p>
                 <p id="event-sport"></p>
+            </div>
+        </div>
+        <div id="event-create-view" class="modal hidden">
+            <div id="create-modal" class="modal-content">
+                <button class="modal-close">X</button>
+                <h2 id="create-modal-title">Create new event</h2>
+                <form>
+                    <label>Name<input type="text" required></label>
+                    <label>Date<input type="date" required></label>
+                    <label>Time<input type="time"></label>
+                    <label>Match?<input type="checkbox"></label>
+                </form>
             </div>
         </div>
         <script src="script.js"></script>

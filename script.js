@@ -11,11 +11,14 @@ const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'Jul
 
 const prevBtn = document.getElementById('prevButton');
 const nextBtn = document.getElementById('nextButton');
+const createBtn = document.getElementById('createButton');
 const monthTitle = document.getElementById('month-title');
 const grid = document.querySelector('.calendar-grid');
 const header = document.querySelector('.calendar-header');
+
 const eventModal = document.getElementById('event-detail-view');
-const closeEventModalBtn = document.getElementById('close-event-modal');
+const createModal = document.getElementById('event-create-view');
+const closeModalBtns = document.querySelectorAll('.modal-close');
 
 // ----------------------------
 // Calendar rendering functions
@@ -88,7 +91,7 @@ function renderEvents(events) {
 }
 
 // ----------------------------
-// Event detail modal functions
+// Modal functions
 // ----------------------------
 function openEventDetail(event) {
     // Fill in the info
@@ -101,6 +104,16 @@ function openEventDetail(event) {
     // Reveal modal
     eventModal.classList.remove('hidden');
 }
+
+function openEventCreate(day = null) {
+    createModal.classList.remove('hidden');
+}
+
+function closeAllModals() {
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.classList.add('hidden');
+    });
+};
 
 // -----------------------
 // Data handling functions
@@ -174,11 +187,23 @@ nextBtn.addEventListener('click', () => {
     renderEvents(normalEvents);
 });
 
-closeEventModalBtn.addEventListener('click', () => {eventModal.classList.add('hidden')});
-eventModal.addEventListener('click',(e) => {
-    if (e.target === eventModal) {
-        eventModal.classList.add('hidden');
-    }
+// Event listener for modal close buttons
+document.querySelectorAll('.modal-close').forEach(btn => {
+    btn.addEventListener('click', closeAllModals);
+});
+
+// Add "outside clicks" event listener to modal views
+document.querySelectorAll('.modal').forEach(modal => {
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeAllModals();
+        }
+    });
+});
+
+createBtn.addEventListener('click', () => {
+    // add check what day was clicked in here and pass it to function
+    openEventCreate();
 });
 
 // --------------

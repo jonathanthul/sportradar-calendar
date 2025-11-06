@@ -43,6 +43,7 @@
 }
 
 .day-cell .event {
+    cursor: pointer;
 }
 
 /* Determines the background for the modal view */
@@ -72,7 +73,7 @@
 }
 
 /* Close button */
-.close-btn {
+.modal-close {
     float: right;
     background: none;
     border: none;
