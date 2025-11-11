@@ -36,11 +36,15 @@
             <div id="create-modal" class="modal-content">
                 <button class="modal-close">X</button>
                 <h2 id="create-modal-title">Create new event</h2>
-                <form>
-                    <label>Name<input type="text" required></label>
-                    <label>Date<input type="date" required></label>
-                    <label>Time<input type="time"></label>
-                    <label>Match?<input type="checkbox"></label>
+                <form id="event-create-form">
+                    <label id="event-input-name-label">Name<input type="text" id="event-input-name" required></label>
+                    <label class="hidden" id="event-input-hometeam-label">Home Team<input type="text" id="event-input-hometeam"></label>
+                    <label class="hidden" id="event-input-awayteam-label">Away Team<input type="text" id="event-input-awayteam"></label>
+                    <label>Match<input type="checkbox" id="event-input-match"></label> 
+                    <label>Date & Time<input type="datetime-local" id="event-input-datetime" required></label>
+                    <label>Sport<input type="text" id="event-input-sport"></label>
+                    <label>Competition<input type="text" id="event-input-competition"></label>
+                    <button type="submit" id="event-input-save">Save</button>
                 </form>
             </div>
         </div>

@@ -3,7 +3,8 @@
 // -------------------------------
 // Global state and DOM references
 // -------------------------------
-let normalEvents = []; // will hold normalized event data after loading
+let normalEvents = [];
+let userEvents = [];
 let currentYear = 2025;
 let currentMonth = 10;
 const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -19,6 +20,18 @@ const header = document.querySelector('.calendar-header');
 const eventModal = document.getElementById('event-detail-view');
 const createModal = document.getElementById('event-create-view');
 const closeModalBtns = document.querySelectorAll('.modal-close');
+const eventSaveBtn = document.getElementById('event-input-save');
+
+const nameInput = document.getElementById('event-input-name');
+const nameLabel = document.getElementById('event-input-name-label');
+const matchInput = document.getElementById('event-input-match');
+const hometeamInput = document.getElementById('event-input-hometeam');
+const hometeamLabel = document.getElementById('event-input-hometeam-label');
+const awayteamInput = document.getElementById('event-input-awayteam');
+const awayteamLabel = document.getElementById('event-input-awayteam-label');
+const datetimeInput = document.getElementById('event-input-datetime');
+const sportInput = document.getElementById('event-input-sport');
+const competitionInput = document.getElementById('event-input-competition');
 
 // ----------------------------
 // Calendar rendering functions
@@ -37,33 +50,41 @@ function renderCalendar(year, month) {
     grid.innerHTML = ''; // clears previous month
     monthTitle.textContent = `${monthNames[currentMonth]} ${currentYear}`;
 
-    const firstDateOfMonth = new Date(year, month, 1);
-    const lastDateOfMonth = new Date(year, month + 1, 0);
+    const firstDateOfMonth = new Date(Date.UTC(year, month, 1));
+    const lastDateOfMonth = new Date(Date.UTC(year, month + 1, 0));
     
     // Determine Monday of first week
     const startDate = new Date(firstDateOfMonth); // create a copy of the startDate to loop over
-    while (startDate.getDay() !== 1) { // .getDay returns day of the week starting at Sunday = 0. .getDate would return the actual day part of the date, i. e. 1-31
-        startDate.setDate(startDate.getDate() - 1) // Take the current startDate, take its day component and subtract 1. Since this is a JS Date object, subtracting one automatically rolls over into previous month or year if needed. Then the startDate is set to that.
+    while (startDate.getUTCDay() !== 1) { // .getDay returns day of the week starting at Sunday = 0. .getDate would return the actual day part of the date, i. e. 1-31
+        startDate.setUTCDate(startDate.getUTCDate() - 1) // Take the current startDate, take its day component and subtract 1. Since this is a JS Date object, subtracting one automatically rolls over into previous month or year if needed. Then the startDate is set to that.
     }
 
     // Determine Sunday of last week
     const endDate = new Date(lastDateOfMonth);
-    while (endDate.getDay() !== 0) {
+    while (endDate.getUTCDay() !== 0) {
         endDate.setDate(endDate.getDate() + 1)
     }
 
     // Generate one cell per day between startDate and endDate
     for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-        // console.log(d) // Test console print
+        const clickDate = new Date(d); // store the current step of the loop for event listener creation down the line. Otherwise you get weird results
+
         const dayDiv = document.createElement('div');
         dayDiv.classList.add('day-cell');
 
-        dayDiv.textContent = d.getDate();
-        dayDiv.dataset.date = d.toISOString().split('T')[0]; // what is going on here?
+        dayDiv.textContent = clickDate.getDate();
+        // toISOString will return the wrong date: Say you're on November 1st. Then new Date (November 1 2025) will return the timestamp for midnight of November 1st 2025 in the local timezone, i. e. NOT UTC but GMT+0100 in your case. Then .toISOString() converts the date into UTC which (since you're operating with midnight) becomes "2025-10-31T23:00:00.000Z", i. e. October 31st 2025 23:00.
+        // FIXED: By using the UTC date for startDate and endDate, this issue doesn't arise
+        dayDiv.dataset.date = clickDate.toISOString().split('T')[0];
 
         // Initialize events container for later
         const eventsContainer = document.createElement('div');
         eventsContainer.classList.add('events');
+        eventsContainer.addEventListener('click', (e) => {
+            if (e.target === eventsContainer) {
+                openEventCreate(clickDate);
+            }
+        });
         dayDiv.appendChild(eventsContainer);
         
         // Highlight today's date
@@ -78,25 +99,55 @@ function renderCalendar(year, month) {
 // loop through all events and add event containers in the correct day cells
 function renderEvents(events) {
     events.forEach(event => {
-        const eventDateString = event.datetime.toISOString().split('T')[0];
-        const dayCell = document.querySelector(`.day-cell[data-date='${eventDateString}']`);
+        // convert UTC time into ms since epoch, subtract timeshift between UTC and local timezone in ms, convert that back to UTC and take the date portion for div matching
+        // subtract because getTimezoneOffset() returns a negative value for UTC+n with positive n
+        const eventLocalDateString = new Date(event.datetime.getTime() - (event.datetime.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+        const dayCell = document.querySelector(`.day-cell[data-date='${eventLocalDateString}']`); // look for "2025-11-03"
         if (dayCell) {
             const eventDiv = document.createElement('div');
             eventDiv.classList.add('event');
-            eventDiv.textContent = event.homeTeam.abbr + " vs " + event.awayTeam.abbr;
+            eventDiv.textContent = event.name
+                ? event.name
+                : event.homeTeam.name + " vs " + event.awayTeam.name;
             eventDiv.addEventListener('click', () => openEventDetail(event));
             dayCell.querySelector('.events').appendChild(eventDiv);
         }
     });
 }
 
+function refreshCalendar(year = currentYear, month = currentMonth) {
+    renderCalendar(year, month);
+    renderEvents(normalEvents);
+    renderEvents(userEvents);
+};
+
+function resetCreateEvent() {
+    nameInput.value = '';
+    hometeamInput.value = '';
+    awayteamInput.value = '';
+    sportInput.value = '';
+    competitionInput.value = '';
+    datetimeInput.value = '';
+    matchInput.checked = false;
+
+    nameLabel.classList.remove('hidden');
+    nameLabel.setAttribute('required', '');
+    hometeamLabel.classList.add('hidden');
+    hometeamInput.removeAttribute('required');
+    awayteamLabel.classList.add('hidden');
+    awayteamInput.removeAttribute('required');
+};
+
 // ----------------------------
 // Modal functions
 // ----------------------------
 function openEventDetail(event) {
     // Fill in the info
+    // This is not set up to work with user events, especially non-match ones
     document.getElementById('event-date').textContent = event.datetime.toLocaleString();
-    document.getElementById('event-title').textContent = `${event.homeTeam.name} vs ${event.awayTeam.name}`;
+    document.getElementById('event-title').textContent = event.name
+        ? event.name
+        : `${event.homeTeam.name} vs ${event.awayTeam.name}`;
     document.getElementById('event-result').textContent = (event.result.homeGoals !== null && event.result.awayGoals !== null) ? `${event.result.homeGoals} : ${event.result.awayGoals}` : '- : -';
     document.getElementById('event-competition').textContent = event.competition ? event.competition : '';
     document.getElementById('event-sport').textContent = event.competition ? event.sport : '';
@@ -105,7 +156,19 @@ function openEventDetail(event) {
     eventModal.classList.remove('hidden');
 }
 
-function openEventCreate(day = null) {
+function openEventCreate(date = null) {
+    resetCreateEvent();
+    const datetimeInput = document.getElementById('event-input-datetime');
+
+    // Prefill datetime input if date is provided
+    if (date !== null) {
+        const yyyy = date.getFullYear();
+        const mm = String(date.getMonth() + 1).padStart(2, '0');
+        const dd = String(date.getDate()).padStart(2, '0');
+
+        datetimeInput.value = `${yyyy}-${mm}-${dd}T12:00`;
+    };
+
     createModal.classList.remove('hidden');
 }
 
@@ -121,14 +184,15 @@ function closeAllModals() {
 
 // normalize event objects. Combines date and time into a single JS Date object, provides fallback values for missing data
 function normalizeEvent(rawEvent) {
-    const dateStr = rawEvent.dateVenue;
-    const timeStr = rawEvent.timeVenueUTC;
+    const dateStr = rawEvent.dateVenue; // "2025-11-03"
+    const timeStr = rawEvent.timeVenueUTC; // "16:00:00",
 
     // convert dateStr and timeStr into ISO 8601 timestamp. T is required by the standard, Z is a shorthand for UTC timezone
     // then apply Date to parse
-    const datetime = dateStr && timeStr ? new Date(`${dateStr}T${timeStr}Z`) : null;
+    const datetime = dateStr && timeStr ? new Date(`${dateStr}T${timeStr}Z`) : null; // 1762185600000 (ms since Jan 1st 1970 UTC)
 
     return {
+        source: 'system',
         datetime,
         sport: rawEvent.sport ?? null,
         competition: rawEvent.originCompetitionName ?? null,
@@ -143,6 +207,7 @@ function normalizeEvent(rawEvent) {
             country: rawEvent.awayTeam?.teamCountryCode ?? 'TBA',
 
         },
+        name : null,
         result: {
             homeGoals: rawEvent.result?.homeGoals ?? null,
             awayGoals: rawEvent.result?.awayGoals ?? null,
@@ -173,8 +238,7 @@ prevBtn.addEventListener('click', () => {
         currentMonth = 11;
         currentYear--;
     }
-    renderCalendar(currentYear, currentMonth);
-    renderEvents(normalEvents);
+    refreshCalendar();
 });
 
 nextBtn.addEventListener('click', () => {
@@ -183,8 +247,7 @@ nextBtn.addEventListener('click', () => {
         currentMonth = 0;
         currentYear++;
     }
-    renderCalendar(currentYear, currentMonth);
-    renderEvents(normalEvents);
+    refreshCalendar();
 });
 
 // Event listener for modal close buttons
@@ -201,10 +264,60 @@ document.querySelectorAll('.modal').forEach(modal => {
     });
 });
 
-createBtn.addEventListener('click', () => {
-    // add check what day was clicked in here and pass it to function
-    openEventCreate();
+createBtn.addEventListener('click', () => {openEventCreate();});
+
+// Make "match" button in create modal modify input fields
+document.getElementById('event-input-match').addEventListener('click', ()=> {
+    nameLabel.classList.toggle('hidden');
+    nameInput.toggleAttribute('required');
+
+    hometeamLabel.classList.toggle('hidden');
+    hometeamInput.toggleAttribute('required');
+
+    awayteamLabel.classList.toggle('hidden');
+    awayteamInput.toggleAttribute('required');
 });
+
+// save event data from for in userEvents
+const eventCreateForm = document.getElementById('event-create-form');
+
+eventCreateForm.addEventListener('submit', (e) => {
+    e.preventDefault(); // stop the submit action from reloading the page
+
+    // it should be okay to store the date as local time because you do .toISOString in renderEvents at that turns it into UTC (?)
+    const datetime = new Date(datetimeInput.value);
+
+    const isMatch = matchInput.checked;
+
+    const event = {
+        source: 'user',
+        datetime,
+        sport: sportInput.value.trim() || null,
+        competition: competitionInput.value.trim() || null, // is this necessary?
+        homeTeam: {
+            name: isMatch ? hometeamInput.value.trim() || 'TBA' : null,
+            abbr: null,
+            country: null
+        },
+        awayTeam: {
+            name: isMatch ? awayteamInput.value.trim() || 'TBA' : null,
+            abbr: null,
+            country: null,
+        },
+        name: isMatch ? null : nameInput.value.trim() || 'Untitled',
+        result: {
+            homeGoals: null, 
+            awayGoals: null
+        }
+    };
+
+    userEvents.push(event);
+    console.log('userEvents', userEvents);
+
+    closeAllModals();
+    refreshCalendar();
+});
+
 
 // --------------
 // Initialization
@@ -213,8 +326,7 @@ async function init() {
     normalEvents = await loadEvents();
 
     renderDayNames();
-    renderCalendar(currentYear, currentMonth);
-    renderEvents(normalEvents);
+    refreshCalendar();
 }
 
 init();
