@@ -1,3 +1,25 @@
+body {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: stretch;
+    font-family: system-ui, sans-serif;
+    background: #f9f9f9;
+    color: #333;
+    line-height: 1.4;
+    --calendar-header-color: #333;
+    --calendar-header-highlight: #D8572A;
+
+    --system-event-background: #C7EBF0;
+    --system-event-hover: #6ECCD8;
+    --system-event-color: #113B40;
+    --user-event-background: #C7EBF0;
+    --user-event-hover: #6ECCD8;
+    --user-event-background: #113B40;
+    --day-today-color: #fff3c4; /*DFF2D8*/
+}
+
 #calendar-navigation {
     display: flex;
     justify-content: center;
@@ -13,7 +35,7 @@
 
 #calendar {
     width: 100%;
-    max-width: 700px;
+    max-width: 900px;
     margin: 0 auto;
 }
 
@@ -23,29 +45,75 @@
 }
 
 .calendar-header div { /* styling the div elements inside the header */
-    font-weight: bold;
+    font-weight: 600;
     text-align: center;
     padding: 10px 0;
 }
 
 .calendar-grid div {
-    border: 1px solid #ddd;
-    min-height: 80px;
-    padding: 5px;
+    padding: 4px;
     position: relative;
 }
 
+.day-cell {
+    border: 1px solid #ddd;
+}
+
+.events {
+    /* should I make these heights dependent on the view height, or just set them differently with @media?*/
+    min-height: 80px;
+    max-height: 100px;
+    padding: 0;
+    font-size: 11px;
+    cursor: copy;
+    border-radius: 2px;
+}
+
+.event {
+    background-color: var(--system-event-background);
+    color: var(--system-event-color);
+    cursor: pointer;
+    margin: 2px 0;
+    border-radius: 2px;
+}
+.event:hover {
+    background-color: var(--system-event-hover);
+}
+
 .day-today {
-    background-color: khaki;
+    background-color: var(--day-today-color);
 }
 
-.day-cell .events {
-    cursor: pointer;
+.calendar-header div:nth-child(6),
+.calendar-header div:nth-child(7) {
+    color: var(--calendar-header-highlight);
 }
 
-.day-cell .event {
-    cursor: pointer;
+@media (max-width: 768px) {
+    /* reduce line height */
+    body {
+        line-height: 1.2;
+    }
+
+    /* allow smaller width for calendar grid cells */
+    .calendar-header, .calendar-grid {
+        grid-template-columns: repeat(7, minmax(40px, 1fr));
+    }
 }
+
+/*
+- fade-in & -out for modals
+- light and dark mode
+- nicer buttons
+- alternative cursor for empty event divs
+- properly structured modals
+- fully responsive on mobile
+- what happens when there's a lot of events in one day?
+- pointer on button hover
+- favicon?
+- day borders are double in the center (detail)
+- maybe add today button
+*/
 
 /* Determines the background for the modal view */
 .modal {
