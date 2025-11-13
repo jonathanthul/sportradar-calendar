@@ -334,6 +334,9 @@ eventCreateForm.addEventListener('submit', (e) => {
 // --------------
 async function init() {
     normalEvents = await loadEvents();
+    // sort the events by date so that renderEvents puts them in the right order
+    normalEvents.sort((a,b) => (a.datetime - b.datetime));
+    console.log(normalEvents);
 
     renderDayNames();
     refreshCalendar();
