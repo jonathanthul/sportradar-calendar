@@ -193,6 +193,30 @@ function closeAllModals() {
 // Data handling functions
 // -----------------------
 
+// fetch data from the events.json file, normalize each event, return array of structured event objects
+// return [] if loading fails
+async function loadEvents() {
+    try {
+        const response = await fetch('./data/events.json'); // await 
+        const rawEvents = await response.json();
+        
+        return rawEvents.data.map(normalizeEvent);
+    } catch (error) {
+        console.error('Error loading events:', error)
+        return [];
+    }
+}
+
+function normalizeText(str) {
+    if (!str) return null;
+    const sportsAbbr = ["FC", "UEFA", "FIFA", "AC", "SC", "AFC", "CONCACAF", "CAF", "OFC", "CONMEBOL", "CECAFA", "UAFA", "UNAF"] // should be replaced by a more comprehensive list
+    return str
+        .trim()
+        .split(' ')
+        .map(term => sportsAbbr.includes(term) ? term : term[0].toUpperCase() + term.slice(1).toLowerCase())
+        .join(' ');
+}
+
 // normalize event objects. Combines date and time into a single JS Date object, provides fallback values for missing data
 function normalizeEvent(rawEvent) {
     const dateStr = rawEvent.dateVenue; // "2025-11-03"
@@ -205,38 +229,21 @@ function normalizeEvent(rawEvent) {
     return {
         source: 'system',
         datetime,
-        sport: rawEvent.sport ?? null,
-        competition: rawEvent.originCompetitionName ?? null,
+        sport: normalizeText(rawEvent.sport),
+        competition: normalizeText(rawEvent.originCompetitionName) ?? null,
         homeTeam: {
-            name: rawEvent.homeTeam?.officialName ?? 'TBA',
-            abbr: rawEvent.homeTeam?.abbreviation ?? 'TBA',
+            name: normalizeText(rawEvent.homeTeam?.officialName) ?? 'TBA',
             country: rawEvent.homeTeam?.teamCountryCode ?? 'TBA',
         }, 
         awayTeam: {
-            name: rawEvent.awayTeam?.officialName ?? 'TBA',
-            abbr: rawEvent.awayTeam?.abbreviation ?? 'TBA',
+            name: normalizeText(rawEvent.awayTeam?.officialName) ?? 'TBA',
             country: rawEvent.awayTeam?.teamCountryCode ?? 'TBA',
-
         },
         name : null,
         result: {
             homeGoals: rawEvent.result?.homeGoals ?? null,
             awayGoals: rawEvent.result?.awayGoals ?? null,
         }
-    }
-}
-
-// fetch data from the events.json file, normalize each event, return array of structured event objects
-// return [] if loading fails
-async function loadEvents() {
-    try {
-        const response = await fetch('./data/events.json'); // await 
-        const rawEvents = await response.json();
-        
-        return rawEvents.data.map(normalizeEvent);
-    } catch (error) {
-        console.error('Error loading events:', error)
-        return [];
     }
 }
 
@@ -309,19 +316,19 @@ eventCreateForm.addEventListener('submit', (e) => {
     const event = {
         source: 'user',
         datetime,
-        sport: sportInput.value.trim() || null,
-        competition: competitionInput.value.trim() || null, // is this necessary?
+        sport: normalizeText(sportInput.value) || null,
+        competition: normalizeText(competitionInput.value) || null, // is this necessary?
         homeTeam: {
-            name: isMatch ? hometeamInput.value.trim() || 'TBA' : null,
+            name: isMatch ? normalizeText(hometeamInput.value) : null,
             abbr: null,
             country: null
         },
         awayTeam: {
-            name: isMatch ? awayteamInput.value.trim() || 'TBA' : null,
+            name: isMatch ? normalizeText(awayteamInput.value) : null,
             abbr: null,
             country: null,
         },
-        name: isMatch ? null : nameInput.value.trim() || 'Untitled',
+        name: isMatch ? null : normalizeText(nameInput.value),
         result: {
             homeGoals: null, 
             awayGoals: null
