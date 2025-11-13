@@ -67,6 +67,7 @@ body {
     font-size: 11px;
     cursor: copy;
     border-radius: 2px;
+    overflow: hidden;
 }
 
 .event {
@@ -75,6 +76,9 @@ body {
     cursor: pointer;
     margin: 2px 0;
     border-radius: 2px;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 .event:hover {
     background-color: var(--system-event-hover);
@@ -92,12 +96,34 @@ body {
 @media (max-width: 768px) {
     /* reduce line height */
     body {
-        line-height: 1.2;
+        line-height: 1.1;
+        font-size: 12pt;
+        margin: 0;
+    }
+
+    /* take up all space not taken up by navigation and calendar header */
+    #calendar {
+        height: calc(100vh - 120px);
     }
 
     /* allow smaller width for calendar grid cells */
     .calendar-header, .calendar-grid {
         grid-template-columns: repeat(7, minmax(40px, 1fr));
+    }
+
+    .calendar-grid {
+        height: 100%;
+        grid-auto-rows: 1fr;
+    }
+
+    .calendar-grid div {
+        padding: 2px;
+        font-size: 8pt;
+    }
+
+    .events {
+        min-height: none;
+        max-height: none;
     }
 }
 
@@ -107,8 +133,6 @@ body {
 - nicer buttons
 - alternative cursor for empty event divs
 - properly structured modals
-- fully responsive on mobile
-- what happens when there's a lot of events in one day?
 - pointer on button hover
 - favicon?
 - day borders are double in the center (detail)
@@ -126,6 +150,13 @@ body {
     justify-content: center;
     align-items: center;
     background: rgba(0,0,0,0.5);
+    opacity: 1;
+    transition: opacity 0.2s ease-in-out;
+}
+
+/* Shown modals fade in */
+.modal:hidden {
+    opacity: 0;
 }
 
 .hidden {
