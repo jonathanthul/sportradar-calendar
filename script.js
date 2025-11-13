@@ -143,9 +143,18 @@ function resetCreateEvent() {
 // Modal functions
 // ----------------------------
 function openEventDetail(event) {
+    datetimeOptions = {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+    };
+
     // Fill in the info
     // This is not set up to work with user events, especially non-match ones
-    document.getElementById('event-date').textContent = event.datetime.toLocaleString();
+    document.getElementById('event-date').textContent = event.datetime.toLocaleString("en-GB", datetimeOptions);
     document.getElementById('event-title').textContent = event.name
         ? event.name
         : `${event.homeTeam.name} vs ${event.awayTeam.name}`;
