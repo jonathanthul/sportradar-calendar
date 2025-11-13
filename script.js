@@ -3,10 +3,11 @@
 // -------------------------------
 // Global state and DOM references
 // -------------------------------
+let currentDate = new Date();
 let normalEvents = [];
 let userEvents = [];
-let currentYear = 2025;
-let currentMonth = 10;
+let currentYear = currentDate.getFullYear();
+let currentMonth = currentDate.getMonth();
 const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
@@ -62,17 +63,17 @@ function renderCalendar(year, month) {
     // Determine Sunday of last week
     const endDate = new Date(lastDateOfMonth);
     while (endDate.getUTCDay() !== 0) {
-        endDate.setDate(endDate.getDate() + 1)
+        endDate.setUTCDate(endDate.getUTCDate() + 1)
     }
 
     // Generate one cell per day between startDate and endDate
-    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+    for (let d = new Date(startDate); d <= endDate; d.setUTCDate(d.getUTCDate() + 1)) {
         const clickDate = new Date(d); // store the current step of the loop for event listener creation down the line. Otherwise you get weird results
 
         const dayDiv = document.createElement('div');
         dayDiv.classList.add('day-cell');
 
-        dayDiv.textContent = clickDate.getDate();
+        dayDiv.textContent = clickDate.getUTCDate();
         // toISOString will return the wrong date: Say you're on November 1st. Then new Date (November 1 2025) will return the timestamp for midnight of November 1st 2025 in the local timezone, i. e. NOT UTC but GMT+0100 in your case. Then .toISOString() converts the date into UTC which (since you're operating with midnight) becomes "2025-10-31T23:00:00.000Z", i. e. October 31st 2025 23:00.
         // FIXED: By using the UTC date for startDate and endDate, this issue doesn't arise
         dayDiv.dataset.date = clickDate.toISOString().split('T')[0];
