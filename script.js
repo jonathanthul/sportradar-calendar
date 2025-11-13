@@ -110,7 +110,7 @@ function renderEvents(events) {
             eventDiv.classList.add('event');
             eventDiv.textContent = event.name
                 ? event.name
-                : event.homeTeam.name + " vs " + event.awayTeam.name;
+                : event.homeTeam.name || 'TBA' + " vs " + event.awayTeam.name || 'TBA';
             eventDiv.addEventListener('click', () => openEventDetail(event));
             dayCell.querySelector('.events').appendChild(eventDiv);
         }
@@ -158,8 +158,8 @@ function openEventDetail(event) {
     document.getElementById('event-date').textContent = event.datetime.toLocaleString("en-GB", datetimeOptions);
     document.getElementById('event-title').textContent = event.name
         ? event.name
-        : `${event.homeTeam.name} vs ${event.awayTeam.name}`;
-    document.getElementById('event-result').textContent = (event.result.homeGoals !== null && event.result.awayGoals !== null) ? `${event.result.homeGoals} : ${event.result.awayGoals}` : '- : -';
+        : event.homeTeam.name || 'TBA' + " vs " + event.awayTeam.name || 'TBA';
+    if (event.result) {document.getElementById('event-result').textContent = (event.result.homeGoals !== null && event.result.awayGoals !== null) ? `${event.result.homeGoals} : ${event.result.awayGoals}` : '- : -'};
     document.getElementById('event-competition').textContent = event.competition ? event.competition : '';
     document.getElementById('event-sport').textContent = event.competition ? event.sport : '';
 
@@ -232,12 +232,12 @@ function normalizeEvent(rawEvent) {
         sport: normalizeText(rawEvent.sport),
         competition: normalizeText(rawEvent.originCompetitionName) ?? null,
         homeTeam: {
-            name: normalizeText(rawEvent.homeTeam?.officialName) ?? 'TBA',
-            country: rawEvent.homeTeam?.teamCountryCode ?? 'TBA',
+            name: normalizeText(rawEvent.homeTeam?.officialName) ?? null,
+            country: rawEvent.homeTeam?.teamCountryCode ?? null,
         }, 
         awayTeam: {
-            name: normalizeText(rawEvent.awayTeam?.officialName) ?? 'TBA',
-            country: rawEvent.awayTeam?.teamCountryCode ?? 'TBA',
+            name: normalizeText(rawEvent.awayTeam?.officialName) ?? null,
+            country: rawEvent.awayTeam?.teamCountryCode ?? null,
         },
         name : null,
         result: {
@@ -318,21 +318,22 @@ eventCreateForm.addEventListener('submit', (e) => {
         datetime,
         sport: normalizeText(sportInput.value) || null,
         competition: normalizeText(competitionInput.value) || null, // is this necessary?
-        homeTeam: {
-            name: isMatch ? normalizeText(hometeamInput.value) : null,
-            abbr: null,
-            country: null
-        },
-        awayTeam: {
-            name: isMatch ? normalizeText(awayteamInput.value) : null,
-            abbr: null,
-            country: null,
-        },
+        homeTeam: isMatch
+            ? {
+                    name: isMatch ? normalizeText(hometeamInput.value) : null,
+                    abbr: null,
+                    country: null
+                }
+            :   null,
+        awayTeam: isMatch
+            ? {
+                name: isMatch ? normalizeText(awayteamInput.value) : null,
+                abbr: null,
+                country: null,
+            }
+            : null,
         name: isMatch ? null : normalizeText(nameInput.value),
-        result: {
-            homeGoals: null, 
-            awayGoals: null
-        }
+        result: isMatch ? {homeGoals: null, awayGoals: null} : null,
     };
 
     userEvents.push(event);
