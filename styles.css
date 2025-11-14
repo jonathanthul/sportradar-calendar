@@ -1,13 +1,7 @@
-body {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: stretch;
-    font-family: system-ui, sans-serif;
-    background: #f9f9f9;
-    color: #333;
-    line-height: 1.4;
+/*:::::::::::::::::::::::::::::
+Basic Stuff & Styles 
+:::::::::::::::::::::::::::::*/
+:root {
     --calendar-header-color: #333;
     --calendar-header-highlight: #D8572A;
 
@@ -22,6 +16,30 @@ body {
     --border-radius: 4px;
 }
 
+body {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: stretch;
+    font-family: system-ui, sans-serif;
+    background: #f9f9f9;
+    color: #333;
+    line-height: 1.4;
+}
+
+/*:::::::::::::::::::::::::::::
+Calendar Layout
+:::::::::::::::::::::::::::::*/
+#calendar {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+/*:::::::::::::::::::::::::::::
+Calendar Navigation
+:::::::::::::::::::::::::::::*/
 #calendar-navigation {
     display: flex;
     justify-content: center;
@@ -32,6 +50,8 @@ body {
 
 #month-title {
     font-weight: 600;
+    min-width: 120px;
+    text-align: center;
 }
 
 .nav-button {
@@ -42,24 +62,15 @@ body {
     border: none;
     cursor: pointer;
 }
-
 .nav-button:hover {
     background-color: #fff3c4;
     border-radius: 10px;
     transition: background-color 0.2s ease;
 }
 
-#month-title {
-    min-width: 120px;
-    text-align: center;
-}
-
-#calendar {
-    width: 100%;
-    max-width: 900px;
-    margin: 0 auto;
-}
-
+/*:::::::::::::::::::::::::::::
+Calendar Grid
+:::::::::::::::::::::::::::::*/
 .calendar-header, .calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
@@ -71,6 +82,12 @@ body {
     padding: 10px 0;
 }
 
+/* Modify weekend day name color*/
+.calendar-header div:nth-child(6),
+.calendar-header div:nth-child(7) {
+    color: var(--calendar-header-highlight);
+}
+
 .calendar-grid div {
     padding: 4px;
     position: relative;
@@ -80,6 +97,13 @@ body {
     border: 1px solid #ddd;
 }
 
+.day-today {
+    background-color: var(--day-today-color);
+}
+
+/*:::::::::::::::::::::::::::::
+Events
+:::::::::::::::::::::::::::::*/
 .events {
     /* should I make these heights dependent on the view height, or just set them differently with @media?*/
     min-height: 80px;
@@ -114,57 +138,11 @@ body {
     transition: background-color 0.2s ease;
 }
 
-.day-today {
-    background-color: var(--day-today-color);
-}
 
-.calendar-header div:nth-child(6),
-.calendar-header div:nth-child(7) {
-    color: var(--calendar-header-highlight);
-}
-
-@media (max-width: 768px) {
-    /* reduce line height */
-    body {
-        line-height: 1.1;
-        font-size: 12pt;
-        margin: 0;
-    }
-
-    /* take up all space not taken up by navigation and calendar header */
-    #calendar {
-        height: calc(100vh - 120px);
-    }
-
-    /* allow smaller width for calendar grid cells */
-    .calendar-header, .calendar-grid {
-        grid-template-columns: repeat(7, minmax(40px, 1fr));
-    }
-
-    .calendar-grid {
-        height: 100%;
-        grid-auto-rows: 1fr;
-    }
-
-    .calendar-grid div {
-        padding: 2px;
-        font-size: 8pt;
-    }
-
-    .events {
-        min-height: none;
-        max-height: none;
-    }
-}
-
-/*
-- fade-in & -out for modals
-- light and dark mode
-- alternative cursor for empty event divs
-- day borders are double in the center (detail)
-*/
-
-/* Determines the background for the modal view */
+/*:::::::::::::::::::::::::::::
+Modals
+:::::::::::::::::::::::::::::*/
+/* Background tint */
 .modal {
     position: fixed;
     top: 0;
@@ -177,10 +155,6 @@ body {
     background: rgba(0,0,0,0.5);
 }
 
-.hidden {
-    display: none;
-}
-
 /* Modal box */
 .modal-content {
     border-radius: var(--border-radius);
@@ -189,6 +163,10 @@ body {
     width: 90%;
     max-width: 400px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.hidden {
+    display: none;
 }
 
 /* Close button */
@@ -200,13 +178,15 @@ body {
     border: none;
     cursor: pointer;
 }
-
 .modal-close:hover {
     background-color: #fff3c4;
     border-radius: 10px;
     transition: background-color 0.2s ease;
 }
 
+/*:::::::::::::::::::::::::::::
+Event Detail & Create Form
+:::::::::::::::::::::::::::::*/
 h2 {
     font-size: 1.2rem;
     text-align: center;
@@ -236,10 +216,6 @@ h2 {
     display: contents;
 }
 
-#event-input-name-label {
-    height: 200%;
-}
-
 #event-create-form label select {
     grid-column: 2;
     border: 1px solid #ccc;
@@ -264,9 +240,61 @@ h2 {
     transition: background-color 0.2s ease;
 }
 
+/*:::::::::::::::::::::::::::::
+Responsive
+:::::::::::::::::::::::::::::*/
+
 @media (max-width: 768px) {
+    /* reduce line height */
+    body {
+        line-height: 1.1;
+        font-size: 0.9rem;
+        margin: 2px;
+    }
+
+    /* take up all space not taken up by navigation and calendar header */
+    #calendar {
+        height: calc(100vh - 120px);
+    }
+
+    /* allow smaller width for calendar grid cells */
+    .calendar-header, .calendar-grid {
+        grid-template-columns: repeat(7, minmax(40px, 1fr));
+    }
+
+    .calendar-grid {
+        height: 100%;
+        grid-auto-rows: 1fr;
+    }
+
+    .calendar-grid div {
+        padding: 2px;
+        font-size: 0.7rem;
+    }
+
+    .events {
+        max-height: none;
+    }
     .modal-content {
         width: 85%;
-        padding: 10px;
+        padding: 1rem;
+    }
+
+    /* should prevent iOS input zoom */
+    input,
+    select,
+    textarea {
+        font-size: 16px;
+    }
+}
+
+/* Disable hover on touch devices */
+@media (hover: none) {
+    .nav-button:hover,
+    .event:hover,
+    .event.user:hover,
+    .modal-close:hover,
+    #event-input-save:hover {
+        background-color: inherit;
     }
 }
