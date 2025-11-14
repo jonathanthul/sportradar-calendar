@@ -83,7 +83,7 @@ body {
     /* should I make these heights dependent on the view height, or just set them differently with @media?*/
     min-height: 80px;
     max-height: 100px;
-    padding: 0;
+    padding: 0px;
     font-size: 11px;
     cursor: pointer;
     border-radius: 2px;

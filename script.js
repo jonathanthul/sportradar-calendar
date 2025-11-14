@@ -11,6 +11,8 @@ let currentMonth = currentDate.getMonth();
 const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
+const teamsports = ['American Football', 'Baseball', 'Basketball', 'Cricket', 'Football', 'Ice hockey', 'Volleyball'];
+
 const todayBtn = document.getElementById('todayButton');
 const prevBtn = document.getElementById('prevButton');
 const nextBtn = document.getElementById('nextButton');
@@ -27,7 +29,6 @@ const eventSaveBtn = document.getElementById('event-input-save');
 const sportInput = document.getElementById('event-select-sport');
 const nameInput = document.getElementById('event-input-name');
 const nameLabel = document.getElementById('event-input-name-label');
-const matchInput = document.getElementById('event-input-match');
 const hometeamInput = document.getElementById('event-input-hometeam');
 const hometeamLabel = document.getElementById('event-input-hometeam-label');
 const awayteamInput = document.getElementById('event-input-awayteam');
@@ -133,7 +134,7 @@ function resetCreateEvent() {
     sportInput.value = '';
     competitionInput.value = '';
     datetimeInput.value = '';
-    matchInput.checked = false;
+    sportInput.value ='';
 
     nameLabel.classList.remove('hidden');
     nameLabel.setAttribute('required', '');
@@ -293,32 +294,35 @@ document.querySelectorAll('.modal').forEach(modal => {
 function updateEventInputs() {
     const sport = sportInput.value;
 
-    teamsports = ['American Football', 'Baseball', 'Basketball', 'Cricket', 'Football', 'Ice hockey', 'Volleyball'];
-    matchsports = ['Boxing', 'Tennis'];
 
     if (
         teamsports.includes(sport)
     ) 
     {
-        console.log(`${sport} selected!`);
+        nameLabel.classList.add('hidden');
+        nameInput.removeAttribute('required');
+
+        hometeamLabel.classList.remove('hidden');
+        hometeamInput.setAttribute('required', '');
+
+        awayteamLabel.classList.remove('hidden');
+        awayteamInput.setAttribute('required', '');
+    } else {
+        nameLabel.classList.remove('hidden');
+        nameInput.setAttribute('required', '');
+
+        hometeamLabel.classList.add('hidden');
+        hometeamInput.removeAttribute('required');
+
+        awayteamLabel.classList.add('hidden');
+        awayteamInput.removeAttribute('required');
     };
 };
 
+// update event create form when sport is selected
 sportInput.addEventListener('click', () => updateEventInputs());
 
 createBtn.addEventListener('click', () => {openEventCreate();});
-
-// Make "match" button in create modal modify input fields
-document.getElementById('event-input-match').addEventListener('click', ()=> {
-    nameLabel.classList.toggle('hidden');
-    nameInput.toggleAttribute('required');
-
-    hometeamLabel.classList.toggle('hidden');
-    hometeamInput.toggleAttribute('required');
-
-    awayteamLabel.classList.toggle('hidden');
-    awayteamInput.toggleAttribute('required');
-});
 
 // save event data from for in userEvents
 const eventCreateForm = document.getElementById('event-create-form');
@@ -329,7 +333,7 @@ eventCreateForm.addEventListener('submit', (e) => {
     // it should be okay to store the date as local time because you do .toISOString in renderEvents at that turns it into UTC (?)
     const datetime = new Date(datetimeInput.value);
 
-    const isMatch = matchInput.checked;
+    const isMatch = teamsports.includes(sportInput.value);
 
     const event = {
         source: 'user',
