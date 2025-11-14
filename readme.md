@@ -51,6 +51,7 @@ The calendar is rendered via JavaScript so new months and user-created events in
 ## Current Limitations
 - Within any day, user-created events are rendered in order of creation, not in chronological order
 - User events reset on page reload
+- Characters used for nav buttons look much worse on Windows than on Mac
 
 ## Planned Improvements
 
